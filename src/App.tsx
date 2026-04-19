@@ -6,7 +6,7 @@ import { ESSAYS } from "./essays";
 import EssayTable from "./components/EssayTable";
 
 export default function App() {
-  const { isLoading, isAuthenticated, loginWithRedirect, logout, user } = useAuth0();
+  const { isLoading, isAuthenticated, loginWithRedirect, logout, user, error: authError } = useAuth0();
   const [essays, setEssays] = useState<EssayRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -51,6 +51,18 @@ export default function App() {
   }
 
   if (isLoading) return <div className="loading">Loading…</div>;
+
+  if (authError) {
+    return (
+      <div className="login-wrap">
+        <div className="login-box">
+          <h1>Graham Essay Tracker</h1>
+          <p className="login-error">Access denied.</p>
+          <button onClick={() => loginWithRedirect()}>Try a different account</button>
+        </div>
+      </div>
+    );
+  }
 
   if (!isAuthenticated) {
     return (
