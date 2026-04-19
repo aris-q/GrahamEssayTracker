@@ -8,6 +8,7 @@ interface Props {
   essays: EssayRowType[];
   onChange: (id: string, patch: Partial<EssayRowType>) => void;
   onBatchChange: (patches: { id: string; patch: Partial<EssayRowType> }[]) => void;
+  onAddEssay: (title: string, url: string) => Promise<void>;
 }
 
 const CSV_TO_STATUS: Record<string, EssayRowType["status"]> = {
@@ -59,10 +60,25 @@ function parseCSV(text: string): string[][] {
   return results;
 }
 
-export default function EssayTable({ essays, onChange, onBatchChange }: Props) {
+export default function EssayTable({ essays, onChange, onBatchChange, onAddEssay }: Props) {
   const [sort, setSort] = useState<SortKey>("default");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [addTitle, setAddTitle] = useState("");
+  const [addUrl, setAddUrl] = useState("");
+  const [adding, setAdding] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleAddSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!addTitle.trim()) return;
+    setAdding(true);
+    await onAddEssay(addTitle.trim(), addUrl.trim());
+    setAdding(false);
+    setAddTitle("");
+    setAddUrl("");
+    setShowAddForm(false);
+  }
 
   function handleExport() {
     const header = "Essay,Date,Note (Done, Reread, Understand),Length,Comments";
@@ -140,8 +156,34 @@ export default function EssayTable({ essays, onChange, onBatchChange }: Props) {
           <button className="csv-btn" onClick={handleExport}>
             Export CSV
           </button>
+          <button className="csv-btn" onClick={() => setShowAddForm(v => !v)}>
+            + Add Essay
+          </button>
         </div>
       </div>
+      {showAddForm && (
+        <form className="add-essay-form" onSubmit={handleAddSubmit}>
+          <input
+            type="text"
+            placeholder="Title"
+            value={addTitle}
+            onChange={e => setAddTitle(e.target.value)}
+            required
+          />
+          <input
+            type="url"
+            placeholder="URL (https://paulgraham.com/...)"
+            value={addUrl}
+            onChange={e => setAddUrl(e.target.value)}
+          />
+          <button type="submit" className="csv-btn" disabled={adding}>
+            {adding ? "Adding…" : "Add"}
+          </button>
+          <button type="button" className="csv-btn" onClick={() => setShowAddForm(false)}>
+            Cancel
+          </button>
+        </form>
+      )}
       <table className="essay-table">
         <thead>
           <tr>

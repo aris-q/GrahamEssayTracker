@@ -71,6 +71,15 @@ export default function App() {
     );
   }
 
+  async function handleAddEssay(title: string, url: string) {
+    const id = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
+    const newRow = { id, title, url };
+    const { error } = await supabase.from("essays").upsert([newRow], { onConflict: "id", ignoreDuplicates: true });
+    if (error) { alert(`Failed to add essay: ${error.message}`); return; }
+    const { data } = await supabase.from("essays").select("*").eq("id", id).single();
+    if (data) setEssays(prev => [...prev, data as EssayRow]);
+  }
+
   async function handleClearAll() {
     if (!window.confirm("Clear all statuses, dates, lengths, and comments?")) return;
     await handleBatchChange(essays.map(e => ({ id: e.id, patch: BLANK_FIELDS })));
@@ -149,7 +158,7 @@ export default function App() {
           </button>
         </div>
       </header>
-      <EssayTable essays={essays} onChange={handleChange} onBatchChange={handleBatchChange} />
+      <EssayTable essays={essays} onChange={handleChange} onBatchChange={handleBatchChange} onAddEssay={handleAddEssay} />
     </div>
   );
 }

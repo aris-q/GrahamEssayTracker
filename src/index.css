@@ -101,6 +101,23 @@ header h1 {
   border-color: #c0392b;
 }
 
+.add-essay-form {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 0 6px;
+  flex-wrap: wrap;
+}
+.add-essay-form input {
+  padding: 5px 10px;
+  font-size: 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  color: #333;
+}
+.add-essay-form input[type="text"] { width: 220px; }
+.add-essay-form input[type="url"] { width: 300px; }
+
 .header-actions {
   display: flex;
   align-items: center;
