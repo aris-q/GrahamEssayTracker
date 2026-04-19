@@ -56,7 +56,7 @@ export default function App() {
   return (
     <div className="app">
       <header>
-        <h1>Paul Graham Essays</h1>
+        <h1>Graham Essay Tracker</h1>
         <div className="subtitle">
           <span>{done} / {total} read</span>
           <span className="progress-bar">
