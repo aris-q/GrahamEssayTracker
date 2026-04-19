@@ -1,7 +1,7 @@
 import type { EssayRow } from "../supabaseClient";
 
 export type SortKey = "default" | "length_asc" | "length_desc" | "date_asc" | "date_desc";
-export type StatusFilter = "all" | "unread" | "done" | "reread_worthy" | "need_to_reread";
+export type StatusFilter = "all" | "unread" | "read" | "done" | "reread_worthy" | "need_to_reread";
 
 interface Props {
   sort: SortKey;
@@ -20,6 +20,7 @@ export default function Filters({ sort, statusFilter, onSort, onStatusFilter, to
         <select value={statusFilter} onChange={e => onStatusFilter(e.target.value as StatusFilter)}>
           <option value="all">All ({total})</option>
           <option value="unread">Unread</option>
+          <option value="read">Read (any status)</option>
           <option value="done">Done</option>
           <option value="reread_worthy">Reread Worthy</option>
           <option value="need_to_reread">Need to Reread</option>
@@ -49,12 +50,12 @@ export function applyFiltersAndSort(
 ): EssayRow[] {
   let result = [...essays];
 
-  if (statusFilter !== "all") {
-    if (statusFilter === "unread") {
-      result = result.filter(e => !e.status);
-    } else {
-      result = result.filter(e => e.status === statusFilter);
-    }
+  if (statusFilter === "unread") {
+    result = result.filter(e => !e.status);
+  } else if (statusFilter === "read") {
+    result = result.filter(e => !!e.status);
+  } else if (statusFilter !== "all") {
+    result = result.filter(e => e.status === statusFilter);
   }
 
   if (sort === "length_asc") {
