@@ -229,18 +229,10 @@ header h1 {
   min-height: 28px;
   resize: none;
   overflow: hidden;
-  transition:
-    height 0.15s ease,
-    min-height 0.15s ease;
 }
 .essay-table textarea:focus {
   outline: none;
   border-color: #4a7c59;
-}
-.essay-table textarea.expanded {
-  min-height: 400px;
-  resize: vertical;
-  overflow: auto;
 }
 
 /* Row status colors */

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { EssayRow as EssayRowType } from "../supabaseClient";
 
 interface Props {
@@ -7,14 +7,23 @@ interface Props {
   onChange: (id: string, patch: Partial<EssayRowType>) => void;
 }
 
+function autoResize(el: HTMLTextAreaElement) {
+  el.style.height = "auto";
+  el.style.height = `${el.scrollHeight}px`;
+}
+
 export default function EssayRow({ essay, index, onChange }: Props) {
   const [comment, setComment] = useState(essay.comments ?? "");
-  const [expanded, setExpanded] = useState(false);
+  const [focused, setFocused] = useState(false);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // Sync when parent resets (clear all, undo, import)
   useEffect(() => {
     setComment(essay.comments ?? "");
   }, [essay.comments]);
+
+  useEffect(() => {
+    if (focused && textareaRef.current) autoResize(textareaRef.current);
+  }, [focused, comment]);
 
   function handleStatusChange(val: string) {
     const patch: Partial<EssayRowType> = {
@@ -31,7 +40,10 @@ export default function EssayRow({ essay, index, onChange }: Props) {
   }
 
   function handleCommentBlur() {
-    setExpanded(false);
+    setFocused(false);
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "";
+    }
     if (comment !== (essay.comments ?? "")) {
       onChange(essay.id, { comments: comment });
     }
@@ -66,10 +78,10 @@ export default function EssayRow({ essay, index, onChange }: Props) {
       <td className="col-date">{essay.date_read ?? "—"}</td>
       <td className="col-comments">
         <textarea
-          className={expanded ? "expanded" : ""}
+          ref={textareaRef}
           value={comment}
-          onChange={e => setComment(e.target.value)}
-          onFocus={() => setExpanded(true)}
+          onChange={e => { setComment(e.target.value); if (textareaRef.current) autoResize(textareaRef.current); }}
+          onFocus={() => setFocused(true)}
           onBlur={handleCommentBlur}
           placeholder="Notes..."
           rows={1}
