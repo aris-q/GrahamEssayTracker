@@ -8,7 +8,7 @@ import EssayTable from "./components/EssayTable";
 const BLANK_FIELDS = { status: null, length: null, date_read: null, comments: "" };
 
 export default function App() {
-  const { isLoading, isAuthenticated, loginWithRedirect, logout, user, error: authError } = useAuth0();
+  const { isLoading, isAuthenticated, loginWithRedirect, logout, error: authError } = useAuth0();
   const [essays, setEssays] = useState<EssayRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
