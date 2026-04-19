@@ -10,8 +10,10 @@ CREATE TABLE IF NOT EXISTS essays (
   comments TEXT DEFAULT ''
 );
 
--- Enable Row Level Security (RLS) and allow all operations for anon key
--- (This is a personal app — no auth needed)
 ALTER TABLE essays ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "allow_all" ON essays FOR ALL USING (true) WITH CHECK (true);
+-- Only authenticated users can access data
+DROP POLICY IF EXISTS "allow_all" ON essays;
+CREATE POLICY "allow_authenticated" ON essays FOR ALL
+  USING (auth.role() = 'authenticated')
+  WITH CHECK (auth.role() = 'authenticated');

@@ -1,15 +1,25 @@
 import { useEffect, useState } from "react";
+import type { Session } from "@supabase/supabase-js";
 import { supabase } from "./supabaseClient";
 import type { EssayRow } from "./supabaseClient";
 import { ESSAYS } from "./essays";
 import EssayTable from "./components/EssayTable";
+import Login from "./components/Login";
 
 export default function App() {
+  const [session, setSession] = useState<Session | null | undefined>(undefined);
   const [essays, setEssays] = useState<EssayRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => setSession(data.session));
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+    return () => subscription.unsubscribe();
+  }, []);
+
+  useEffect(() => {
+    if (!session) return;
     async function init() {
       const rows = ESSAYS.map(e => ({ id: e.id, title: e.title, url: e.url }));
       const { error: upsertErr } = await supabase
@@ -39,7 +49,7 @@ export default function App() {
     }
 
     init();
-  }, []);
+  }, [session]);
 
   async function handleChange(id: string, patch: Partial<EssayRow>) {
     setEssays(prev => prev.map(e => (e.id === id ? { ...e, ...patch } : e)));
@@ -47,8 +57,10 @@ export default function App() {
     if (error) console.error("Save failed:", error.message);
   }
 
+  if (session === undefined) return <div className="loading">Loading…</div>;
+  if (!session) return <Login />;
   if (loading) return <div className="loading">Loading essays…</div>;
-  if (error) return <div className="error">{error}<br /><small>Check your .env file has VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY set.</small></div>;
+  if (error) return <div className="error">{error}</div>;
 
   const done = essays.filter(e => e.status === "done").length;
   const total = essays.length;
@@ -63,6 +75,7 @@ export default function App() {
             <span className="progress-fill" style={{ width: `${(done / total) * 100}%` }} />
           </span>
         </div>
+        <button className="signout-btn" onClick={() => supabase.auth.signOut()}>Sign out</button>
       </header>
       <EssayTable essays={essays} onChange={handleChange} />
     </div>
