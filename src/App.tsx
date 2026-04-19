@@ -1,40 +1,18 @@
 import { useEffect, useState } from "react";
-import type { Session } from "@supabase/supabase-js";
+import { useAuth0 } from "@auth0/auth0-react";
 import { supabase } from "./supabaseClient";
 import type { EssayRow } from "./supabaseClient";
 import { ESSAYS } from "./essays";
 import EssayTable from "./components/EssayTable";
-import Login from "./components/Login";
 
 export default function App() {
-  const [session, setSession] = useState<Session | null | undefined>(undefined);
+  const { isLoading, isAuthenticated, loginWithRedirect, logout, user } = useAuth0();
   const [essays, setEssays] = useState<EssayRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const ALLOWED_EMAIL = import.meta.env.VITE_ALLOWED_EMAIL as string;
-
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => {
-      const s = data.session;
-      if (s && s.user.email !== ALLOWED_EMAIL) {
-        supabase.auth.signOut();
-      } else {
-        setSession(s);
-      }
-    });
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
-      if (s && s.user.email !== ALLOWED_EMAIL) {
-        supabase.auth.signOut();
-      } else {
-        setSession(s);
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    if (!session) return;
+    if (!isAuthenticated) return;
     async function init() {
       const rows = ESSAYS.map(e => ({ id: e.id, title: e.title, url: e.url }));
       const { error: upsertErr } = await supabase
@@ -64,7 +42,7 @@ export default function App() {
     }
 
     init();
-  }, [session]);
+  }, [isAuthenticated]);
 
   async function handleChange(id: string, patch: Partial<EssayRow>) {
     setEssays(prev => prev.map(e => (e.id === id ? { ...e, ...patch } : e)));
@@ -72,8 +50,19 @@ export default function App() {
     if (error) console.error("Save failed:", error.message);
   }
 
-  if (session === undefined) return <div className="loading">Loading…</div>;
-  if (!session) return <Login />;
+  if (isLoading) return <div className="loading">Loading…</div>;
+
+  if (!isAuthenticated) {
+    return (
+      <div className="login-wrap">
+        <div className="login-box">
+          <h1>Graham Essay Tracker</h1>
+          <button onClick={() => loginWithRedirect()}>Log in</button>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) return <div className="loading">Loading essays…</div>;
   if (error) return <div className="error">{error}</div>;
 
@@ -90,7 +79,12 @@ export default function App() {
             <span className="progress-fill" style={{ width: `${(done / total) * 100}%` }} />
           </span>
         </div>
-        <button className="signout-btn" onClick={() => supabase.auth.signOut()}>Sign out</button>
+        <button
+          className="signout-btn"
+          onClick={() => logout({ logoutParams: { returnTo: window.location.origin } })}
+        >
+          Sign out {user?.email ? `(${user.email})` : ""}
+        </button>
       </header>
       <EssayTable essays={essays} onChange={handleChange} />
     </div>
