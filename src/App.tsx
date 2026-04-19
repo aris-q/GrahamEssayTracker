@@ -12,9 +12,24 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const ALLOWED_EMAIL = import.meta.env.VITE_ALLOWED_EMAIL as string;
+
   useEffect(() => {
-    supabase.auth.getSession().then(({ data }) => setSession(data.session));
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => setSession(s));
+    supabase.auth.getSession().then(({ data }) => {
+      const s = data.session;
+      if (s && s.user.email !== ALLOWED_EMAIL) {
+        supabase.auth.signOut();
+      } else {
+        setSession(s);
+      }
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
+      if (s && s.user.email !== ALLOWED_EMAIL) {
+        supabase.auth.signOut();
+      } else {
+        setSession(s);
+      }
+    });
     return () => subscription.unsubscribe();
   }, []);
 
