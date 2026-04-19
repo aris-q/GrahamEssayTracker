@@ -197,7 +197,7 @@ header h1 {
   color: #666;
 }
 .col-comments {
-  min-width: 300px;
+  min-width: 350px;
 }
 
 .col-title a {
@@ -238,7 +238,7 @@ header h1 {
   border-color: #4a7c59;
 }
 .essay-table textarea.expanded {
-  min-height: 100px;
+  min-height: 400px;
   resize: vertical;
   overflow: auto;
 }
