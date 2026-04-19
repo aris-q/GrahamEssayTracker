@@ -58,7 +58,7 @@ export default function App() {
         <div className="login-box">
           <h1>Graham Essay Tracker</h1>
           <p className="login-error">Access denied.</p>
-          <button onClick={() => loginWithRedirect()}>Try a different account</button>
+          <button onClick={() => loginWithRedirect({ authorizationParams: { prompt: 'login' } })}>Try a different account</button>
         </div>
       </div>
     );
