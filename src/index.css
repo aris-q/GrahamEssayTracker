@@ -163,7 +163,7 @@ header h1 {
 .col-status { width: 160px; }
 .col-length { width: 110px; }
 .col-date { width: 110px; font-size: 12px; color: #666; }
-.col-comments { width: 180px; min-width: 180px; }
+.col-comments { min-width: 320px; width: 100%; }
 
 .col-title a {
   color: #1a1a1a;
