@@ -7,9 +7,9 @@ import type { SortKey, StatusFilter } from "./Filters";
 interface Props {
   essays: EssayRowType[];
   onChange: (id: string, patch: Partial<EssayRowType>) => void;
+  onBatchChange: (patches: { id: string; patch: Partial<EssayRowType> }[]) => void;
 }
 
-// CSV column "Note" values → our status keys
 const CSV_TO_STATUS: Record<string, EssayRowType["status"]> = {
   done: "done",
   reread: "reread_worthy",
@@ -30,7 +30,36 @@ const LENGTH_TO_CSV: Record<string, string> = {
   long: "Long",
 };
 
-export default function EssayTable({ essays, onChange }: Props) {
+function parseCSV(text: string): string[][] {
+  const results: string[][] = [];
+  const lines = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n").trim().split("\n");
+  for (const line of lines) {
+    const fields: string[] = [];
+    let i = 0;
+    while (i < line.length) {
+      if (line[i] === '"') {
+        i++;
+        let field = "";
+        while (i < line.length) {
+          if (line[i] === '"' && line[i + 1] === '"') { field += '"'; i += 2; }
+          else if (line[i] === '"') { i++; break; }
+          else { field += line[i++]; }
+        }
+        fields.push(field);
+        if (line[i] === ",") i++;
+      } else {
+        let field = "";
+        while (i < line.length && line[i] !== ",") field += line[i++];
+        fields.push(field.trim());
+        if (line[i] === ",") i++;
+      }
+    }
+    results.push(fields);
+  }
+  return results;
+}
+
+export default function EssayTable({ essays, onChange, onBatchChange }: Props) {
   const [sort, setSort] = useState<SortKey>("default");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -59,30 +88,26 @@ export default function EssayTable({ essays, onChange }: Props) {
     const reader = new FileReader();
     reader.onload = (ev) => {
       const text = ev.target?.result as string;
-      const lines = text.trim().split("\n").slice(1); // skip header
-      for (const line of lines) {
-        // Simple CSV parse (handles quoted fields)
-        const cols = line.match(/("(?:[^"]|"")*"|[^,]*),?/g)
-          ?.map(c => c.replace(/,$/, "").replace(/^"|"$/g, "").replace(/""/g, '"').trim()) ?? [];
+      const rows = parseCSV(text).slice(1); // skip header
+      const patches: { id: string; patch: Partial<EssayRowType> }[] = [];
 
-        const [title, date, note, length, ...commentParts] = cols;
-        const comment = commentParts.join(",");
-
-        const essay = essays.find(
-          e => e.title.toLowerCase() === title?.toLowerCase(),
-        );
+      for (const cols of rows) {
+        const [title, date, note, length, comment] = cols;
+        const essay = essays.find(e => e.title.toLowerCase() === title?.toLowerCase());
         if (!essay) continue;
 
         const patch: Partial<EssayRowType> = {};
-        const status = CSV_TO_STATUS[note?.toLowerCase().replace(/\s+/g, "_") ?? ""];
-        if (status !== undefined) patch.status = status;
+        const statusKey = note?.toLowerCase().replace(/\s+/g, "_") ?? "";
+        if (statusKey in CSV_TO_STATUS) patch.status = CSV_TO_STATUS[statusKey];
         if (date) patch.date_read = date;
         const len = length?.toLowerCase() as EssayRowType["length"];
         if (len === "short" || len === "medium" || len === "long") patch.length = len;
-        if (comment) patch.comments = comment;
+        if (comment !== undefined) patch.comments = comment;
 
-        if (Object.keys(patch).length > 0) onChange(essay.id, patch);
+        if (Object.keys(patch).length > 0) patches.push({ id: essay.id, patch });
       }
+
+      if (patches.length > 0) onBatchChange(patches);
     };
     reader.readAsText(file);
     e.target.value = "";

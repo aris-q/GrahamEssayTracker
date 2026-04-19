@@ -31,6 +31,12 @@ header h1 {
   font-size: 13px;
 }
 
+.progress-pct {
+  font-weight: 600;
+  color: #4a7c59;
+  font-size: 13px;
+}
+
 .progress-bar {
   display: inline-block;
   width: 200px;
@@ -74,6 +80,16 @@ header h1 {
   font-weight: 500;
 }
 .csv-btn:hover { border-color: #4a7c59; color: #4a7c59; }
+.csv-btn:disabled { opacity: 0.4; cursor: default; }
+.csv-btn.danger { color: #c0392b; border-color: #e0a0a0; }
+.csv-btn.danger:hover { border-color: #c0392b; }
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-left: auto;
+}
 
 /* Filters */
 .filters {
@@ -256,7 +272,6 @@ header h1 {
 
 /* Sign out */
 .signout-btn {
-  margin-left: auto;
   padding: 5px 12px;
   font-size: 12px;
   background: transparent;
