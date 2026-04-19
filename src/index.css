@@ -118,6 +118,32 @@ header h1 {
 .add-essay-form input[type="text"] { width: 220px; }
 .add-essay-form input[type="url"] { width: 300px; }
 
+.new-essays-panel {
+  padding: 10px 14px;
+  margin-bottom: 8px;
+  border: 1px solid #c8dbc8;
+  border-radius: 6px;
+  background: #f4faf4;
+  font-size: 13px;
+}
+.new-essays-none { color: #4a7c59; }
+.new-essays-label { font-weight: 600; color: #333; display: block; margin-bottom: 6px; }
+.new-essays-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.new-essays-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.new-essays-list a { color: #4a7c59; text-decoration: none; }
+.new-essays-list a:hover { text-decoration: underline; }
+
 .header-actions {
   display: flex;
   align-items: center;

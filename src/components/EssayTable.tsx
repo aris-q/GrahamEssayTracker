@@ -60,6 +60,25 @@ function parseCSV(text: string): string[][] {
   return results;
 }
 
+interface NewEssay { title: string; url: string; }
+
+async function fetchNewEssays(existingIds: Set<string>): Promise<NewEssay[]> {
+  const res = await fetch("/api/rss");
+  const xml = await res.text();
+  const doc = new DOMParser().parseFromString(xml, "application/xml");
+  const items = Array.from(doc.querySelectorAll("item"));
+  const results: NewEssay[] = [];
+  for (const item of items) {
+    const url = item.querySelector("link")?.textContent?.trim() ?? "";
+    const title = item.querySelector("title")?.textContent?.trim() ?? "";
+    const match = url.match(/paulgraham\.com\/([^/]+?)(?:\.html)?$/);
+    if (!match) continue;
+    const id = match[1];
+    if (!existingIds.has(id)) results.push({ title, url });
+  }
+  return results;
+}
+
 export default function EssayTable({ essays, onChange, onBatchChange, onAddEssay }: Props) {
   const [sort, setSort] = useState<SortKey>("default");
   const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
@@ -67,7 +86,27 @@ export default function EssayTable({ essays, onChange, onBatchChange, onAddEssay
   const [addTitle, setAddTitle] = useState("");
   const [addUrl, setAddUrl] = useState("");
   const [adding, setAdding] = useState(false);
+  const [checking, setChecking] = useState(false);
+  const [newEssays, setNewEssays] = useState<NewEssay[] | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  async function handleCheckNew() {
+    setChecking(true);
+    setNewEssays(null);
+    try {
+      const existingIds = new Set(essays.map(e => e.id));
+      const found = await fetchNewEssays(existingIds);
+      setNewEssays(found);
+    } catch {
+      alert("Failed to fetch RSS feed.");
+    }
+    setChecking(false);
+  }
+
+  async function handleAddFromFeed(essay: NewEssay) {
+    await onAddEssay(essay.title, essay.url);
+    setNewEssays(prev => prev?.filter(e => e.url !== essay.url) ?? null);
+  }
 
   async function handleAddSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -159,8 +198,31 @@ export default function EssayTable({ essays, onChange, onBatchChange, onAddEssay
           <button className="csv-btn" onClick={() => setShowAddForm(v => !v)}>
             + Add Essay
           </button>
+          <button className="csv-btn" onClick={handleCheckNew} disabled={checking}>
+            {checking ? "Checking…" : "Check for New"}
+          </button>
         </div>
       </div>
+      {newEssays !== null && (
+        <div className="new-essays-panel">
+          {newEssays.length === 0 ? (
+            <span className="new-essays-none">All essays up to date.</span>
+          ) : (
+            <>
+              <span className="new-essays-label">{newEssays.length} new essay{newEssays.length !== 1 ? "s" : ""} found:</span>
+              <ul className="new-essays-list">
+                {newEssays.map(e => (
+                  <li key={e.url}>
+                    <a href={e.url} target="_blank" rel="noopener noreferrer">{e.title}</a>
+                    <button className="csv-btn" onClick={() => handleAddFromFeed(e)}>Add</button>
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+          <button className="csv-btn" onClick={() => setNewEssays(null)}>Dismiss</button>
+        </div>
+      )}
       {showAddForm && (
         <form className="add-essay-form" onSubmit={handleAddSubmit}>
           <input
