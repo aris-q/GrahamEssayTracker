@@ -1,4 +1,10 @@
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -79,10 +85,21 @@ header h1 {
   color: #444;
   font-weight: 500;
 }
-.csv-btn:hover { border-color: #4a7c59; color: #4a7c59; }
-.csv-btn:disabled { opacity: 0.4; cursor: default; }
-.csv-btn.danger { color: #c0392b; border-color: #e0a0a0; }
-.csv-btn.danger:hover { border-color: #c0392b; }
+.csv-btn:hover {
+  border-color: #4a7c59;
+  color: #4a7c59;
+}
+.csv-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+.csv-btn.danger {
+  color: #c0392b;
+  border-color: #e0a0a0;
+}
+.csv-btn.danger:hover {
+  border-color: #c0392b;
+}
 
 .header-actions {
   display: flex;
@@ -135,7 +152,7 @@ header h1 {
   background: white;
   border-radius: 8px;
   overflow: hidden;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .essay-table th {
@@ -156,21 +173,43 @@ header h1 {
   vertical-align: middle;
 }
 
-.essay-table tr:last-child td { border-bottom: none; }
+.essay-table tr:last-child td {
+  border-bottom: none;
+}
 
-.col-num { width: 40px; color: #aaa; font-size: 12px; }
-.col-title { min-width: 240px; }
-.col-status { width: 160px; }
-.col-length { width: 110px; }
-.col-date { width: 110px; font-size: 12px; color: #666; }
-.col-comments { min-width: 320px; width: 100%; }
+.col-num {
+  width: 40px;
+  color: #aaa;
+  font-size: 12px;
+}
+.col-title {
+  min-width: 240px;
+}
+.col-status {
+  width: 160px;
+}
+.col-length {
+  width: 110px;
+}
+.col-date {
+  width: 110px;
+  font-size: 12px;
+  color: #666;
+}
+.col-comments {
+  min-width: 200px;
+  width: 100%;
+}
 
 .col-title a {
   color: #1a1a1a;
   text-decoration: none;
   font-weight: 500;
 }
-.col-title a:hover { text-decoration: underline; color: #4a7c59; }
+.col-title a:hover {
+  text-decoration: underline;
+  color: #4a7c59;
+}
 
 .essay-table select {
   padding: 3px 6px;
@@ -191,9 +230,14 @@ header h1 {
   min-height: 28px;
   resize: none;
   overflow: hidden;
-  transition: height 0.15s ease, min-height 0.15s ease;
+  transition:
+    height 0.15s ease,
+    min-height 0.15s ease;
 }
-.essay-table textarea:focus { outline: none; border-color: #4a7c59; }
+.essay-table textarea:focus {
+  outline: none;
+  border-color: #4a7c59;
+}
 .essay-table textarea.expanded {
   min-height: 100px;
   resize: vertical;
@@ -201,23 +245,42 @@ header h1 {
 }
 
 /* Row status colors */
-.row-done td { background: #f0faf3; }
-.row-reread_worthy td { background: #fff8e6; }
-.row-need_to_reread td { background: #fff1f0; }
-.row-unread td { background: white; }
+.row-done td {
+  background: #f0faf3;
+}
+.row-reread_worthy td {
+  background: #fff8e6;
+}
+.row-need_to_reread td {
+  background: #fff1f0;
+}
+.row-unread td {
+  background: white;
+}
 
-.row-done:hover td { background: #e6f7ec; }
-.row-reread_worthy:hover td { background: #fff3d4; }
-.row-need_to_reread:hover td { background: #ffe8e6; }
-.row-unread:hover td { background: #fafafa; }
+.row-done:hover td {
+  background: #e6f7ec;
+}
+.row-reread_worthy:hover td {
+  background: #fff3d4;
+}
+.row-need_to_reread:hover td {
+  background: #ffe8e6;
+}
+.row-unread:hover td {
+  background: #fafafa;
+}
 
 /* Loading / error */
-.loading, .error {
+.loading,
+.error {
   padding: 48px;
   text-align: center;
   color: #555;
 }
-.error { color: #c0392b; }
+.error {
+  color: #c0392b;
+}
 
 /* Login */
 .login-wrap {
@@ -231,7 +294,7 @@ header h1 {
 .login-box {
   background: white;
   border-radius: 10px;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
   padding: 40px 48px;
   width: 360px;
   text-align: center;
@@ -255,7 +318,10 @@ header h1 {
   border-radius: 6px;
   font-size: 14px;
 }
-.login-box input:focus { outline: none; border-color: #4a7c59; }
+.login-box input:focus {
+  outline: none;
+  border-color: #4a7c59;
+}
 
 .login-box button {
   padding: 10px;
@@ -267,11 +333,23 @@ header h1 {
   font-weight: 600;
   cursor: pointer;
 }
-.login-box button:disabled { opacity: 0.6; cursor: default; }
-.login-box button:hover:not(:disabled) { background: #3d6b4b; }
+.login-box button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+.login-box button:hover:not(:disabled) {
+  background: #3d6b4b;
+}
 
-.login-sent { color: #4a7c59; font-size: 14px; line-height: 1.5; }
-.login-error { color: #c0392b; font-size: 13px; }
+.login-sent {
+  color: #4a7c59;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.login-error {
+  color: #c0392b;
+  font-size: 13px;
+}
 
 /* Sign out */
 .signout-btn {
@@ -283,7 +361,10 @@ header h1 {
   cursor: pointer;
   color: #666;
 }
-.signout-btn:hover { border-color: #999; color: #333; }
+.signout-btn:hover {
+  border-color: #999;
+  color: #333;
+}
 
 header {
   display: flex;
@@ -292,4 +373,6 @@ header {
   gap: 12px;
   margin-bottom: 24px;
 }
-header h1 { margin-bottom: 0; }
+header h1 {
+  margin-bottom: 0;
+}
