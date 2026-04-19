@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { supabase, EssayRow } from "./supabaseClient";
+import { supabase } from "./supabaseClient";
+import type { EssayRow } from "./supabaseClient";
 import { ESSAYS } from "./essays";
 import EssayTable from "./components/EssayTable";
 

@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { EssayRow as EssayRowType } from "../supabaseClient";
+import type { EssayRow as EssayRowType } from "../supabaseClient";
 
 interface Props {
   essay: EssayRowType;
@@ -7,17 +7,6 @@ interface Props {
   onChange: (id: string, patch: Partial<EssayRowType>) => void;
 }
 
-const STATUS_LABELS: Record<string, string> = {
-  done: "Done",
-  reread_worthy: "Reread Worthy",
-  need_to_reread: "Need to Reread",
-};
-
-const LENGTH_LABELS: Record<string, string> = {
-  short: "Short",
-  medium: "Medium",
-  long: "Long",
-};
 
 export default function EssayRow({ essay, index, onChange }: Props) {
   const commentRef = useRef<HTMLTextAreaElement>(null);

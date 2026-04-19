@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { EssayRow as EssayRowType } from "../supabaseClient";
+import type { EssayRow as EssayRowType } from "../supabaseClient";
 import EssayRow from "./EssayRow";
-import Filters, { SortKey, StatusFilter, applyFiltersAndSort } from "./Filters";
+import Filters, { applyFiltersAndSort } from "./Filters";
+import type { SortKey, StatusFilter } from "./Filters";
 
 interface Props {
   essays: EssayRowType[];
@@ -37,7 +38,12 @@ export default function EssayTable({ essays, onChange }: Props) {
         </thead>
         <tbody>
           {visible.map((essay, i) => (
-            <EssayRow key={essay.id} essay={essay} index={i} onChange={onChange} />
+            <EssayRow
+              key={essay.id}
+              essay={essay}
+              index={i}
+              onChange={onChange}
+            />
           ))}
         </tbody>
       </table>

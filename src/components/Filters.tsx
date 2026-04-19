@@ -1,4 +1,4 @@
-import { EssayRow } from "../supabaseClient";
+import type { EssayRow } from "../supabaseClient";
 
 export type SortKey = "default" | "length_asc" | "length_desc" | "date_asc" | "date_desc";
 export type StatusFilter = "all" | "unread" | "done" | "reread_worthy" | "need_to_reread";
