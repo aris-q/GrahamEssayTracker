@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useState } from "react";
 import type { EssayRow as EssayRowType } from "../supabaseClient";
 
 interface Props {
@@ -7,9 +7,14 @@ interface Props {
   onChange: (id: string, patch: Partial<EssayRowType>) => void;
 }
 
-
 export default function EssayRow({ essay, index, onChange }: Props) {
-  const commentRef = useRef<HTMLTextAreaElement>(null);
+  const [comment, setComment] = useState(essay.comments ?? "");
+  const [expanded, setExpanded] = useState(false);
+
+  // Sync when parent resets (clear all, undo, import)
+  useEffect(() => {
+    setComment(essay.comments ?? "");
+  }, [essay.comments]);
 
   function handleStatusChange(val: string) {
     const patch: Partial<EssayRowType> = {
@@ -26,9 +31,9 @@ export default function EssayRow({ essay, index, onChange }: Props) {
   }
 
   function handleCommentBlur() {
-    const val = commentRef.current?.value ?? "";
-    if (val !== essay.comments) {
-      onChange(essay.id, { comments: val });
+    setExpanded(false);
+    if (comment !== (essay.comments ?? "")) {
+      onChange(essay.id, { comments: comment });
     }
   }
 
@@ -61,8 +66,10 @@ export default function EssayRow({ essay, index, onChange }: Props) {
       <td className="col-date">{essay.date_read ?? "—"}</td>
       <td className="col-comments">
         <textarea
-          ref={commentRef}
-          defaultValue={essay.comments ?? ""}
+          className={expanded ? "expanded" : ""}
+          value={comment}
+          onChange={e => setComment(e.target.value)}
+          onFocus={() => setExpanded(true)}
           onBlur={handleCommentBlur}
           placeholder="Notes..."
           rows={1}

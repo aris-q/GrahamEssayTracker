@@ -163,11 +163,7 @@ header h1 {
 .col-status { width: 160px; }
 .col-length { width: 110px; }
 .col-date { width: 110px; font-size: 12px; color: #666; }
-.col-comments { min-width: 320px; width: 100%; }
-
-.essay-table textarea {
-  min-height: 36px;
-}
+.col-comments { width: 180px; min-width: 180px; }
 
 .col-title a {
   color: #1a1a1a;
@@ -191,11 +187,18 @@ header h1 {
   border-radius: 4px;
   font-size: 12px;
   padding: 4px 6px;
-  resize: vertical;
   font-family: inherit;
   min-height: 28px;
+  resize: none;
+  overflow: hidden;
+  transition: height 0.15s ease, min-height 0.15s ease;
 }
 .essay-table textarea:focus { outline: none; border-color: #4a7c59; }
+.essay-table textarea.expanded {
+  min-height: 100px;
+  resize: vertical;
+  overflow: auto;
+}
 
 /* Row status colors */
 .row-done td { background: #f0faf3; }
