@@ -8,27 +8,50 @@ import EssayTable from "./components/EssayTable";
 const BLANK_FIELDS = { status: null, length: null, date_read: null, comments: "" };
 
 export default function App() {
-  const { isLoading, isAuthenticated, loginWithRedirect, logout, error: authError } = useAuth0();
+  const { isLoading, isAuthenticated, loginWithRedirect, logout, user, error: authError } = useAuth0();
   const [essays, setEssays] = useState<EssayRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const undoStack = useRef<EssayRow[][]>([]);
 
   useEffect(() => {
-    if (!isAuthenticated) return;
-    async function init() {
-      const rows = ESSAYS.map(e => ({ id: e.id, title: e.title, url: e.url }));
-      const { error: upsertErr } = await supabase
-        .from("essays")
-        .upsert(rows, { onConflict: "id", ignoreDuplicates: true });
+    if (!isAuthenticated || !user?.sub) return;
+    const userId = user.sub;
+    const email = user.email ?? '';
 
-      if (upsertErr) {
-        setError(`Failed to initialize essays: ${upsertErr.message}`);
-        setLoading(false);
-        return;
+    async function init() {
+      await supabase
+        .from("user_profiles")
+        .upsert({ user_id: userId, email }, { onConflict: "user_id" });
+
+      const { data: existing } = await supabase
+        .from("user_essays")
+        .select("id")
+        .eq("user_id", userId)
+        .limit(1);
+
+      if (!existing || existing.length === 0) {
+        const now = new Date().toISOString();
+        const rows = ESSAYS.map(e => ({
+          user_id: userId,
+          id: e.id,
+          title: e.title,
+          url: e.url,
+          ...BLANK_FIELDS,
+          updated_at: now,
+        }));
+        const { error: insertErr } = await supabase.from("user_essays").insert(rows);
+        if (insertErr) {
+          setError(`Failed to initialize essays: ${insertErr.message}`);
+          setLoading(false);
+          return;
+        }
       }
 
-      const { data, error: fetchErr } = await supabase.from("essays").select("*");
+      const { data, error: fetchErr } = await supabase
+        .from("user_essays")
+        .select("id, title, url, status, length, date_read, comments")
+        .eq("user_id", userId);
 
       if (fetchErr || !data) {
         setError(`Failed to load essays: ${fetchErr?.message}`);
@@ -45,38 +68,59 @@ export default function App() {
     }
 
     init();
-  }, [isAuthenticated]);
+  }, [isAuthenticated, user]);
 
   function pushUndo(snapshot: EssayRow[]) {
     undoStack.current = [...undoStack.current.slice(-19), snapshot];
   }
 
   async function handleChange(id: string, patch: Partial<EssayRow>) {
+    const userId = user?.sub ?? '';
     setEssays(prev => {
       pushUndo(prev);
       return prev.map(e => (e.id === id ? { ...e, ...patch } : e));
     });
-    const { error } = await supabase.from("essays").update(patch).eq("id", id);
+    const { error } = await supabase
+      .from("user_essays")
+      .update({ ...patch, updated_at: new Date().toISOString() })
+      .eq("user_id", userId)
+      .eq("id", id);
     if (error) console.error("Save failed:", error.message);
   }
 
   async function handleBatchChange(patches: { id: string; patch: Partial<EssayRow> }[]) {
+    const userId = user?.sub ?? '';
     setEssays(prev => {
       pushUndo(prev);
       const map = new Map(patches.map(p => [p.id, p.patch]));
       return prev.map(e => map.has(e.id) ? { ...e, ...map.get(e.id) } : e);
     });
+    const now = new Date().toISOString();
     await Promise.all(
-      patches.map(({ id, patch }) => supabase.from("essays").update(patch).eq("id", id))
+      patches.map(({ id, patch }) =>
+        supabase
+          .from("user_essays")
+          .update({ ...patch, updated_at: now })
+          .eq("user_id", userId)
+          .eq("id", id)
+      )
     );
   }
 
   async function handleAddEssay(title: string, url: string) {
+    const userId = user?.sub ?? '';
     const id = title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-    const newRow = { id, title, url };
-    const { error } = await supabase.from("essays").upsert([newRow], { onConflict: "id", ignoreDuplicates: true });
+    const newRow = { user_id: userId, id, title, url, ...BLANK_FIELDS, updated_at: new Date().toISOString() };
+    const { error } = await supabase
+      .from("user_essays")
+      .upsert([newRow], { onConflict: "user_id,id", ignoreDuplicates: true });
     if (error) { alert(`Failed to add essay: ${error.message}`); return; }
-    const { data } = await supabase.from("essays").select("*").eq("id", id).single();
+    const { data } = await supabase
+      .from("user_essays")
+      .select("id, title, url, status, length, date_read, comments")
+      .eq("user_id", userId)
+      .eq("id", id)
+      .single();
     if (data) setEssays(prev => [...prev, data as EssayRow]);
   }
 
@@ -86,18 +130,26 @@ export default function App() {
   }
 
   async function handleUndo() {
+    const userId = user?.sub ?? '';
     if (undoStack.current.length === 0) return;
     const prev = undoStack.current[undoStack.current.length - 1];
     undoStack.current = undoStack.current.slice(0, -1);
     setEssays(prev);
-    // Find changed rows and save to Supabase
+    const now = new Date().toISOString();
     await Promise.all(
-      prev.map(e => supabase.from("essays").update({
-        status: e.status,
-        length: e.length,
-        date_read: e.date_read,
-        comments: e.comments,
-      }).eq("id", e.id))
+      prev.map(e =>
+        supabase
+          .from("user_essays")
+          .update({
+            status: e.status,
+            length: e.length,
+            date_read: e.date_read,
+            comments: e.comments,
+            updated_at: now,
+          })
+          .eq("user_id", userId)
+          .eq("id", e.id)
+      )
     );
   }
 
